@@ -1,0 +1,10 @@
+# local dev copy (canonical site lives in docs/)
+/web/
+# delivered zip snapshots (regenerable)
+*.zip
+# python
+__pycache__/
+*.pyc
+# os
+Thumbs.db
+.DS_Store

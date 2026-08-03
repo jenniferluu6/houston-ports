@@ -1,0 +1,126 @@
+{
+  "_comment": "Port Houston Container Service Schedule, Revised January 2026 (source PDF uploaded 2026-02). 19 liner services. 'rotation' lists cleaned port keys (see ports.json). 'raw' preserves the PDF text verbatim. 'notes' records every cleanup/interpretation. AAOPT (a Port Houston terminal/berth code, not a foreign port) and 'Escobedo' (no known seaport) are omitted from drawn rotations and flagged.",
+  "trade_lanes": {
+    "India/MiddleEast": {"color": "#E4572E"},
+    "Med":              {"color": "#D9A420"},
+    "N/S America":      {"color": "#2A9D5C"},
+    "Trans-Atlantic":   {"color": "#3D7DCA"},
+    "Trans-Pacific":    {"color": "#8E5CC4"}
+  },
+  "services": [
+    {
+      "id": "INDUSA", "name": "INDUSA", "lane": "India/MiddleEast", "teu": 6000, "terminal": "BPT",
+      "rotation": ["houston","freeport_bahama","savannah","veracruz","cristobal","abu_dhabi","jebel_ali","mundra","nhava_sheva","colombo","vizhinjam"],
+      "raw": "Houston USA, Freeport Grand Bahamas, Savannah, Veracruz, Cristobal, Abu Dhabi, Abu Dhabi, Jebel, Ali, Mundra, Jawaharlal Nehru, Colombo, Trivandrum.",
+      "notes": "Deduped 'Abu Dhabi, Abu Dhabi'; joined 'Jebel, Ali' -> Jebel Ali; Trivandrum -> Vizhinjam."
+    },
+    {
+      "id": "MECL", "name": "MAERSK MECL", "lane": "India/MiddleEast", "teu": 6800, "terminal": "BPT",
+      "rotation": ["houston","newark","algeciras","port_said","djibouti","salalah","jebel_ali","port_qasim","pipavav","nhava_sheva","jeddah","port_qasim","mundra","tanger_med"],
+      "raw": "Houston USA, Newark Apt/New York, Algeciras, Port Said, Djibouti, Salalah, Jebel Ali, Qasim Terminal/Karachi, Pipavav Port, Jawaharlal Nehru, AAOPT, Jeddah, Muhammad Bin Qasim, Munda, Tanger Med.",
+      "notes": "Omitted 'AAOPT' (Houston terminal code, appears mid-rotation). 'Qasim Terminal/Karachi' and 'Muhammad Bin Qasim' both = Port Qasim (two calls). Munda -> Mundra."
+    },
+    {
+      "id": "MGX", "name": "GEMINI MGX", "lane": "Med", "teu": 6600, "terminal": "BCT",
+      "rotation": ["houston","genoa","tarragona","valencia","veracruz","altamira","barcelona","tanger_med"],
+      "raw": "Houston USA, Genoa, Tarragona, Valencia, Veracruz, Altamira, Barcelona, Tanger Med.",
+      "notes": ""
+    },
+    {
+      "id": "MEDGULF", "name": "MSC MEDGULF", "lane": "Med", "teu": 8000, "terminal": "BPT",
+      "rotation": ["houston","new_orleans","freeport_bahama","las_palmas","barcelona","gioia_tauro","napoli","livorno","genoa","barcelona","valencia","sines","freeport_bahama","miami","veracruz","altamira"],
+      "raw": "Gioia Tauro, Napoli, Livorno, Genoa, Barcelona, Valencia, Sines, Freeport Grand Bal, Miami, Veracruz, Altamira, Houston USA, New Orleans, Freeport Grand Bahamas, Las Palmas, Barcelona, Gioia Tauro, Napoli, Livorno, Genoa, Barcelona, Valencia, Sines, Freeport Grand Bal, Miami USA, Veracruz, Altamira, Houston USA, New Orleans, Freeport Grand Bahamas, Las Palmas, Barcelona, Gioia Tauro, San Salvador.",
+      "notes": "PDF prints the loop TWICE; collapsed to one cycle re-anchored at Houston. Barcelona is called TWICE per cycle (after Las Palmas, and again after Genoa) - both kept. 'Freeport Grand Bal' -> Freeport, Grand Bahama. Trailing 'San Salvador' omitted as a doubled-text artifact."
+    },
+    {
+      "id": "BRAZEX", "name": "BRAZEX", "lane": "N/S America", "teu": 6300, "terminal": "BPT",
+      "rotation": ["houston","itajai","itacoatiara","rio_de_janeiro","manaus","macapa","paranagua","salvador","santos","vitoria","cartagena","kingston","veracruz","manzanillo_pa","freeport_bahama","new_orleans","itaguai","altamira","conde","navegantes","imbituba","caucedo"],
+      "raw": "Houston USA, Itajai, Itacoatiara, Rio de Janeiro, Manaus, Macapa, Paranagua, Salvador, Santos, Victoria, Cartagena, Kingston, Veracruz, Manzanillo, Freeport, New Orleans, Itaguai, Altamira, Conde, Navegantes, Imbituba, Caucedo.",
+      "notes": "Victoria -> Vitoria. 'Manzanillo' read as Panama/Colon (flagged). 'Freeport' -> Grand Bahama (flagged)."
+    },
+    {
+      "id": "GS1", "name": "HLC S AMERICA GS1", "lane": "N/S America", "teu": 6500, "terminal": "BCT",
+      "rotation": ["houston","buenos_aires","navegantes","rio_de_janeiro","santos","suape","cartagena","altamira","veracruz","new_orleans","montevideo","paranagua","itajai"],
+      "raw": "Houston USA, Buenos Aires, Navegantes, Rio de Janeiro, Santos, Suape, Cartagena, Altamira, Veracruz, New Orleans, Montevideo, Paranagua, Itajai.",
+      "notes": ""
+    },
+    {
+      "id": "SCS", "name": "HSD S AMERICA", "lane": "N/S America", "teu": 5600, "terminal": "BCT",
+      "rotation": ["houston","buenos_aires","imbituba","itapoa","navegantes","paranagua","rio_grande","rio_de_janeiro","salvador","santos","suape","cartagena","altamira","veracruz","balboa","cristobal","montevideo","new_orleans","puerto_cabello","vitoria"],
+      "raw": "Houston USA, AAOPT, Buenos Aires, Imbituba, Itapoa, Navegantes, Paranagua, Rio Grande, Rio de Janeiro, Salvador, Santos, Suape, Cartagena, Altamira, Veracruz, Balboa, Cristobal, Montevideo, New Orleans USA, Puerto Cabello, Vitoria.",
+      "notes": "Omitted 'AAOPT'. Balboa->Cristobal = a Panama Canal transit within the rotation."
+    },
+    {
+      "id": "LPU", "name": "LPU PROGRESSO EXPRESS", "lane": "N/S America", "teu": 200, "terminal": "BCT",
+      "rotation": ["houston","progreso","panama_city_fl"],
+      "raw": "Houston USA, AAOPT, Progreso, Panama City.",
+      "notes": "Omitted 'AAOPT'. Smallest service (200 TEU Gulf feeder). 'Panama City' read as Panama City, FL (Gulf) - a Gulf feeder transiting the canal to Pacific Panama is implausible. AMBIGUOUS; verify with the carrier."
+    },
+    {
+      "id": "GOX", "name": "SEA Gulf Ocean Express", "lane": "N/S America", "teu": 2700, "terminal": "BCT",
+      "rotation": ["houston","cartagena","puerto_barrios","puerto_cortes","cristobal","manzanillo_pa","new_orleans"],
+      "raw": "Houston USA, AAOPT, Cartagena, Puerto Barrios, Puerto Cortes, Cristobal, Manzanillo, New Orleans.",
+      "notes": "Omitted 'AAOPT'. 'Manzanillo' read as Panama/Colon (flagged)."
+    },
+    {
+      "id": "YUKA", "name": "YUKA EXPRESS", "lane": "N/S America", "teu": 1900, "terminal": "BCT",
+      "rotation": ["houston","freeport_bahama","puerto_cortes","puerto_barrios","cartagena","kingston","santo_tomas","barranquilla"],
+      "raw": "Houston USA, Freeport, Puerto Cortez, Puerto Barrios, Cartagena, Kingston, Santo Tomas de Castilla, Barranquilla.",
+      "notes": "'Freeport' -> Grand Bahama (flagged). Puerto Cortez -> Puerto Cortes."
+    },
+    {
+      "id": "ZGT", "name": "ZIM GULF TOUCAN", "lane": "N/S America", "teu": 3500, "terminal": "BCT",
+      "rotation": ["houston","veracruz","altamira","houston","mobile","kingston","cartagena","santos","buenos_aires","montevideo","itapoa","paranagua","rio_de_janeiro"],
+      "raw": "Houston USA, Veracruz, Altamira, Houston USA, Mobile, Kingston, Kingston, Cartagena, Santos, Buenos Aires, Montevideo, Itapoa, Paranagua, Rio de Janeiro.",
+      "notes": "Houston appears twice (mid-rotation return) - kept. Deduped consecutive 'Kingston, Kingston'."
+    },
+    {
+      "id": "AL2", "name": "GEMINI AL2", "lane": "Trans-Atlantic", "teu": 4800, "terminal": "BCT",
+      "rotation": ["houston","antwerpen","rotterdam","bremerhaven","norfolk"],
+      "raw": "Houston USA, Antwerpen, Rotterdam, Bremerhaven, Norfolk.",
+      "notes": ""
+    },
+    {
+      "id": "MEX GULF", "name": "MSC MEXICO GULF EXPRESS", "lane": "Trans-Atlantic", "teu": 5400, "terminal": "BCT",
+      "rotation": ["houston","rotterdam","bremerhaven","veracruz","altamira","new_orleans","mobile","freeport_bahama","antwerpen","felixstowe"],
+      "raw": "Houston USA, Rotterdam, Bremerhaven, Veracruz, Altamira, New Orleans, Mobile, Freeport Grand Bahamas, Antwerpen, Felixstowe.",
+      "notes": ""
+    },
+    {
+      "id": "VICTORY", "name": "VICTORY BRIDGE", "lane": "Trans-Atlantic", "teu": 6400, "terminal": "BPT",
+      "rotation": ["houston","mobile","new_orleans","le_havre","antwerpen","le_havre","rotterdam","bremerhaven","tornio","charleston","miami","veracruz","altamira","savannah","southampton","zeebrugge"],
+      "raw": "Houston USA, Mobile, New Orleans, Le Havre, Antwerpen, Le Havre, Rotterdam, Bremerhaven, Tornio, Charleston, Miami, Veracruz, Altamira, Escobedo, Savannah, Southampton, Zeebrugge.",
+      "notes": "Le Havre called twice (kept). 'Tornio' flagged (Baltic, unusual). 'Escobedo' OMITTED - no known seaport (General Escobedo is inland Nuevo Leon)."
+    },
+    {
+      "id": "GME", "name": "CHS GULF OF MEXICO EXPRESS (GME)", "lane": "Trans-Pacific", "teu": 8100, "terminal": "BCT",
+      "rotation": ["houston","mobile","tampa","shanghai","ningbo","xiamen","yantian","balboa"],
+      "raw": "Houston USA, Mobile, Tampa, Shanghai, Ningbo, Xiamen, Yantian, Balboa",
+      "notes": "Gulf->Asia legs transit the Panama Canal (searoute marine routing)."
+    },
+    {
+      "id": "EC4", "name": "EC4", "lane": "Trans-Pacific", "teu": 7000, "terminal": "BPT",
+      "rotation": ["houston","kaohsiung","hong_kong","yantian","ningbo","shanghai","pusan","mobile","rodman","kaohsiung"],
+      "raw": "Houston USA, Kaohsiung, Hong Kong, Yantian, Ningbo, Shanghai, Pusan, Mobile, Rodman, Kaohsiung.",
+      "notes": "Ends back at Kaohsiung (loop). Houston->Kaohsiung transits the Panama Canal (searoute marine routing)."
+    },
+    {
+      "id": "PEXIII", "name": "FAR EAST PEX3", "lane": "Trans-Pacific", "teu": 9000, "terminal": "BPT",
+      "rotation": ["houston","mobile","new_orleans","tampa","miami","kingston","singapore","jeddah","singapore","vung_tau","hong_kong","shekou","ningbo","shanghai","pusan","jakarta","savannah","tanger_med","caucedo","qingdao","yantian","zeebrugge","southampton"],
+      "raw": "Houston USA, AAOPT, Mobile, New Orleans, Tampa, Miami, Kingston, Singapore, Jeddah, Singapore, Vung Tau, Hong Kong, Shekou, Ningbo, Shanghai, Pusan, Jakarta, Java, Savannah, TANGER MED, Caucedo, Qingdao, Yantian, Zeebrugge, Southhampton.",
+      "notes": "Omitted 'AAOPT'. 'Jakarta, Java' -> one call (jakarta). Southhampton -> Southampton. Very long / near round-the-world listing; printed order may not reflect a single physical loop (flagged)."
+    },
+    {
+      "id": "LONESTAR", "name": "LONESTAR EXPRESS", "lane": "Trans-Pacific", "teu": 7900, "terminal": "BPT",
+      "rotation": ["houston","new_orleans","tampa","miami","freeport_bahama","panama_city","rodman","pusan","ningbo","shanghai","yangshan","singapore","yantian","vung_tau"],
+      "raw": "Houston USA, New Orleans, Tampa, Miami, Freeport Grand Bahamas, Panama City, Rodman, Pusan, Ningbo, Shanghai, AAOPT, Yangshan, Singapore, Yantian, Vung Tau.",
+      "notes": "Omitted 'AAOPT' (mid-rotation)."
+    },
+    {
+      "id": "TP15", "name": "TP15/US3", "lane": "Trans-Pacific", "teu": 8100, "terminal": "BPT",
+      "rotation": ["houston","shanghai","ningbo","pusan","lazaro_cardenas","cristobal","mobile","cartagena","balboa","yantian"],
+      "raw": "Houston USA, Shanghai, Ningbo, Pusan, Lazaro Cardenas, Cristobal, Mobile, Cartagena, Balboa, Yantian.",
+      "notes": "Houston->Shanghai transits the Panama Canal (searoute marine routing)."
+    }
+  ]
+}

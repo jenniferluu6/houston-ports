@@ -1,0 +1,352 @@
+<title>Port Houston &mdash; Container Service Network</title>
+<style>
+  :root{
+    --paper:#f4f3ee; --panel:#eeede7; --land:#e2e1d9; --land-stroke:#cdccc2;
+    --ink:#15140f; --muted:#6c6b61; --hair:#d8d7cd; --frame:#15140f;
+    --casing:var(--paper);
+    --lane-india:#e0392b; --lane-med:#cf8500; --lane-nsa:#0f9b53; --lane-atl:#2b62dd; --lane-pac:#9926cf;
+    --title:"Bahnschrift","DIN Condensed","DIN Alternate","Oswald","Arial Narrow","Franklin Gothic Medium",system-ui,sans-serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,Roboto,sans-serif;
+    --mono:ui-monospace,"SF Mono","Cascadia Code","Segoe UI Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#0d0d10; --panel:#141418; --land:#1d1d22; --land-stroke:#2c2c33;
+      --ink:#f1f0ea; --muted:#97968c; --hair:#26262c; --frame:#f1f0ea;
+      --lane-india:#ff6553; --lane-med:#f5b12f; --lane-nsa:#2fc873; --lane-atl:#5f92ff; --lane-pac:#c96dff;
+    }
+  }
+  :root[data-theme="light"]{
+    --paper:#f4f3ee; --panel:#eeede7; --land:#e2e1d9; --land-stroke:#cdccc2;
+    --ink:#15140f; --muted:#6c6b61; --hair:#d8d7cd; --frame:#15140f;
+    --lane-india:#e0392b; --lane-med:#cf8500; --lane-nsa:#0f9b53; --lane-atl:#2b62dd; --lane-pac:#9926cf;
+  }
+  :root[data-theme="dark"]{
+    --paper:#0d0d10; --panel:#141418; --land:#1d1d22; --land-stroke:#2c2c33;
+    --ink:#f1f0ea; --muted:#97968c; --hair:#26262c; --frame:#f1f0ea;
+    --lane-india:#ff6553; --lane-med:#f5b12f; --lane-nsa:#2fc873; --lane-atl:#5f92ff; --lane-pac:#c96dff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.5;
+    -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1240px;margin:0 auto;padding:clamp(14px,2.6vw,30px);}
+
+  /* ---- poster header ---- */
+  header.top{border-bottom:2px solid var(--frame);padding-bottom:16px;margin-bottom:18px;}
+  .eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;}
+  .eyebrow b{color:var(--ink);font-weight:600;}
+  h1{font-family:var(--title);font-weight:700;text-transform:uppercase;letter-spacing:.005em;
+    font-size:clamp(2rem,6.4vw,4.6rem);line-height:.92;margin:.14em 0 .12em;text-wrap:balance;}
+  .sub{max-width:70ch;color:var(--muted);font-size:.95rem;}
+  .sub em{color:var(--ink);font-style:normal;font-weight:600;}
+  .disclaimer{font-family:var(--mono);font-size:.72rem;color:var(--muted);margin-top:10px;max-width:88ch;
+    line-height:1.6;}
+  .disclaimer b{color:var(--ink);}
+
+  /* ---- legend / lane key ---- */
+  .key{display:flex;flex-wrap:wrap;gap:0;margin:18px 0 10px;border:1.5px solid var(--frame);}
+  .key button{flex:1 1 150px;display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--paper);
+    border:0;border-right:1.5px solid var(--frame);cursor:pointer;text-align:left;color:var(--ink);
+    font-family:var(--sans);transition:background .12s,opacity .12s;}
+  .key button:last-child{border-right:0;}
+  .key button .rail{width:26px;height:6px;flex:0 0 auto;border-radius:1px;}
+  .key button .lab{font-weight:650;font-size:.82rem;line-height:1.1;}
+  .key button .n{font-family:var(--mono);font-size:.68rem;color:var(--muted);}
+  .key button .txt{display:flex;flex-direction:column;gap:1px;}
+  .key button:hover{background:var(--panel);}
+  .key button.dim{opacity:.32;}
+  .key button.solo{background:var(--panel);}
+  .key button:focus-visible{outline:2px solid var(--ink);outline-offset:-2px;}
+  .key .allbtn .rail{background:linear-gradient(90deg,var(--lane-india),var(--lane-med),var(--lane-nsa),var(--lane-atl),var(--lane-pac));}
+
+  /* ---- map ---- */
+  .mapframe{border:1.5px solid var(--frame);background:var(--paper);position:relative;}
+  svg.map{display:block;width:100%;height:auto;}
+  .land{fill:var(--land);stroke:var(--land-stroke);stroke-width:.5;stroke-linejoin:round;}
+  .ocean{fill:var(--paper);stroke:none;}
+  .casing{fill:none;stroke:var(--casing);stroke-linecap:round;stroke-linejoin:round;}
+  .route{fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:2;opacity:.9;
+    transition:opacity .16s,stroke-width .16s;}
+  .route.hl{opacity:1;stroke-width:3.6;}
+  .route.fade{opacity:.08;}
+  .port{fill:var(--ink);}
+  .port.fade{opacity:.12;}
+  .port-hit{fill:transparent;cursor:pointer;}
+  .houston-ring{fill:none;stroke:var(--ink);stroke-width:1.6;}
+  .houston-core{fill:var(--ink);}
+  .houston-label{font-family:var(--title);font-weight:700;text-transform:uppercase;letter-spacing:.04em;
+    font-size:13px;fill:var(--ink);paint-order:stroke;stroke:var(--paper);stroke-width:3.5px;stroke-linejoin:round;}
+  @media (prefers-reduced-motion:no-preference){
+    svg.map{animation:fadein .7s ease both;}
+  }
+  @keyframes fadein{from{opacity:0}to{opacity:1}}
+
+  .tooltip{position:fixed;z-index:30;pointer-events:none;max-width:340px;background:var(--paper);
+    border:1.5px solid var(--frame);padding:11px 13px;font-size:.8rem;opacity:0;transform:translateY(3px);
+    transition:opacity .1s;box-shadow:4px 4px 0 var(--frame);}
+  .tooltip.show{opacity:1;transform:none;}
+  .tt-name{font-family:var(--title);font-weight:700;text-transform:uppercase;letter-spacing:.02em;
+    font-size:1rem;display:flex;align-items:center;gap:8px;line-height:1;}
+  .tt-name .sw{width:22px;height:6px;flex:0 0 auto;border-radius:1px;}
+  .tt-meta{font-family:var(--mono);font-size:.7rem;color:var(--muted);margin:5px 0 7px;
+    padding-bottom:6px;border-bottom:1px solid var(--hair);}
+  .tt-rot{font-family:var(--mono);font-size:.7rem;line-height:1.6;color:var(--ink);}
+  .tt-rot b{color:var(--muted);}
+
+  /* ---- service index (poster appendix table) ---- */
+  section.index{margin-top:26px;}
+  .index-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    border-bottom:2px solid var(--frame);padding-bottom:6px;margin-bottom:2px;}
+  .index-head h2{font-family:var(--title);font-weight:700;text-transform:uppercase;letter-spacing:.02em;
+    font-size:1.5rem;margin:0;}
+  .index-head .hint{font-family:var(--mono);font-size:.7rem;color:var(--muted);}
+  .lane-block{margin-top:14px;}
+  .lane-title{font-family:var(--mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.12em;
+    color:var(--ink);display:flex;align-items:center;gap:9px;margin-bottom:4px;}
+  .lane-title .rail{width:30px;height:6px;border-radius:1px;}
+  .lane-title .ct{color:var(--muted);}
+  table.svc{width:100%;border-collapse:collapse;font-size:.82rem;}
+  table.svc td,table.svc th{padding:7px 8px;text-align:left;border-bottom:1px solid var(--hair);}
+  table.svc th{font-family:var(--mono);font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;
+    color:var(--muted);font-weight:500;}
+  table.svc td.id{font-family:var(--mono);font-size:.72rem;color:var(--muted);white-space:nowrap;}
+  table.svc td.nm{font-weight:600;}
+  table.svc td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;}
+  table.svc td.trm{font-family:var(--mono);font-size:.72rem;color:var(--muted);white-space:nowrap;}
+  table.svc tr.row{cursor:pointer;transition:background .1s;}
+  table.svc tr.row:hover{background:var(--panel);}
+  table.svc tr.row.active{background:var(--panel);}
+  table.svc tr.row.active td:first-child{box-shadow:inset 3px 0 0 var(--rowcol);}
+
+  footer.src{margin-top:30px;padding-top:14px;border-top:1.5px solid var(--frame);
+    font-family:var(--mono);font-size:.72rem;color:var(--muted);line-height:1.7;}
+  footer.src a{color:inherit;}
+  .flag-note{margin-top:8px;}
+  .flag-note summary{cursor:pointer;color:var(--ink);}
+  .flag-note ul{margin:8px 0 0;padding-left:18px;columns:2;column-gap:26px;}
+  @media(max-width:640px){.flag-note ul{columns:1;}}
+  .flag-note li{margin-bottom:5px;break-inside:avoid;}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow"><span>Port Houston</span><b>Container Liner Network</b><span>Schedule rev. Jan 2026</span></div>
+    <h1>Where the boxes go</h1>
+    <p class="sub">All <em>19</em> scheduled container services calling Port Houston, drawn along their
+      real sea-lane routes &mdash; through the Panama and Suez canals, Gibraltar and Malacca.</p>
+    <p class="disclaimer"><b>How to read this.</b> Each colored line is one liner service, following the
+      actual navigable shipping lane between its published ports of call (marine routing, not straight lines).
+      These are sea-lane paths, <b>not</b> live AIS vessel tracks. Where a line seems to touch land it follows a
+      canal (Panama, Suez) or a river to an inland port (Manaus on the Amazon, New Orleans on the Mississippi).
+      A few ambiguous port names in the PDF were interpreted &mdash; see notes at the foot of the page.</p>
+  </header>
+
+  <div class="key" id="key" role="group" aria-label="Filter by trade lane"></div>
+
+  <div class="mapframe">
+    <svg class="map" id="map" xmlns="http://www.w3.org/2000/svg" role="img"
+         aria-label="World map of Port Houston container sea-lane routes"></svg>
+  </div>
+
+  <section class="index">
+    <div class="index-head">
+      <h2>Service index</h2>
+      <div class="hint">hover a row or a line &rarr; full rotation &middot; click to isolate</div>
+    </div>
+    <div id="groups"></div>
+  </section>
+
+  <footer class="src">
+    Data: <a href="https://porthouston.com/">Port Houston</a> Container Service Schedule (rev. Jan 2026) &middot;
+    Routing: searoute marine network (canals + shipping lanes) &middot; Basemap: Natural Earth 110m (public domain) &middot;
+    Projection: Robinson &middot; Built for ONE Architecture &amp; Urbanism.
+    <details class="flag-note">
+      <summary>Interpretation &amp; data-quality notes</summary>
+      <ul id="flags"></ul>
+    </details>
+  </footer>
+</div>
+
+<div class="tooltip" id="tt" role="tooltip"></div>
+
+<script>
+const PORTS = __PORTS_JSON__;
+const DB = __SERVICES_JSON__;
+const GEO = __GEO_JSON__;
+const SEAROUTES = __SEAROUTES_JSON__;
+
+const P = PORTS.ports, SERVICES = DB.services, LANES = DB.trade_lanes;
+const LANE_VAR = {"India/MiddleEast":"--lane-india","Med":"--lane-med","N/S America":"--lane-nsa",
+                  "Trans-Atlantic":"--lane-atl","Trans-Pacific":"--lane-pac"};
+const TERM = {"BPT":"Bayport","BCT":"Barbours Cut"};
+const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+/* ---------- Robinson projection ---------- */
+const RX=[1,.9986,.9954,.99,.9822,.973,.96,.9427,.9216,.8962,.8679,.835,.7986,.7597,.7186,.6732,.6213,.5722,.5322];
+const RY=[0,.062,.124,.186,.248,.31,.372,.434,.4958,.5571,.6176,.6769,.7346,.7903,.8435,.8936,.9394,.9761,1];
+function robPair(latDeg){
+  const a=Math.min(Math.abs(latDeg),90)/5,i=Math.floor(a),f=a-i;
+  if(i>=18)return[RX[18],RY[18]];
+  return[RX[i]+(RX[i+1]-RX[i])*f,RY[i]+(RY[i+1]-RY[i])*f];
+}
+const XMAX=0.8487*Math.PI,YMAX=1.3523;
+function proj(lon,lat){const[x,y]=robPair(lat);return[0.8487*x*(lon*Math.PI/180),1.3523*y*(lat<0?-1:1)];}
+const VW=1000,PAD=8,VH=Math.round((VW-2*PAD)/(XMAX/YMAX)+2*PAD);
+function toXY(lon,lat){const[px,py]=proj(lon,lat);
+  return[PAD+(px+XMAX)/(2*XMAX)*(VW-2*PAD),PAD+(YMAX-py)/(2*YMAX)*(VH-2*PAD)];}
+
+/* split a normalized [lon,lat] polyline at the antimeridian into SVG path strings */
+function toPaths(pts){
+  const segs=[];let cur=[pts[0]];
+  for(let i=1;i<pts.length;i++){
+    if(Math.abs(pts[i][0]-pts[i-1][0])>180){segs.push(cur);cur=[pts[i]];}
+    else cur.push(pts[i]);
+  }
+  segs.push(cur);
+  return segs.filter(s=>s.length>1).map(s=>"M"+s.map(pt=>{const[x,y]=toXY(pt[0],pt[1]);
+    return x.toFixed(1)+" "+y.toFixed(1);}).join(" L"));
+}
+
+/* ---------- SVG scaffold ---------- */
+const svg=document.getElementById("map");
+svg.setAttribute("viewBox","0 0 "+VW+" "+VH);
+const NS="http://www.w3.org/2000/svg";
+const mk=(t,a)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e;};
+
+// ocean neatline (Robinson frame)
+let frame="M";
+for(let la=-90;la<=90;la+=2){const[x,y]=toXY(180,la);frame+=(la===-90?"":"L")+x.toFixed(1)+" "+y.toFixed(1);}
+for(let la=90;la>=-90;la-=2){const[x,y]=toXY(-180,la);frame+="L"+x.toFixed(1)+" "+y.toFixed(1);}
+frame+="Z";
+svg.appendChild(mk("path",{d:frame,class:"ocean"}));
+
+// land
+const landG=mk("g",{});
+for(const f of GEO.features){
+  const polys=f.geometry.type==="Polygon"?[f.geometry.coordinates]:f.geometry.coordinates;
+  for(const poly of polys)for(const ring of poly){
+    let cross=false;for(let i=1;i<ring.length;i++){if(Math.abs(ring[i][0]-ring[i-1][0])>180){cross=true;break;}}
+    if(cross)continue;
+    let d="M";for(let i=0;i<ring.length;i++){const[x,y]=toXY(ring[i][0],ring[i][1]);d+=(i?"L":"")+x.toFixed(1)+" "+y.toFixed(1);}
+    landG.appendChild(mk("path",{d:d+"Z",class:"land"}));
+  }
+}
+svg.appendChild(landG);
+
+/* ---------- routes (casing layer + color layer) ---------- */
+const casingG=mk("g",{class:"casing"}),routesG=mk("g",{});
+svg.appendChild(casingG);svg.appendChild(routesG);
+const portServices={},routeEls={};
+SERVICES.forEach((s,si)=>{
+  const col=cssv(LANE_VAR[s.lane]),rot=s.rotation;
+  rot.forEach(k=>{(portServices[k]=portServices[k]||[]).push(s.id);});
+  routeEls[s.id]=[];
+  for(let i=0;i<rot.length-1;i++){
+    if(rot[i]===rot[i+1])continue;
+    const geo=SEAROUTES[rot[i]+">"+rot[i+1]];
+    if(!geo)continue;
+    for(const d of toPaths(geo)){
+      casingG.appendChild(mk("path",{d,"stroke-width":3.6}));
+      const el=mk("path",{d,class:"route",stroke:col,"data-sid":s.id});
+      routesG.appendChild(el);routeEls[s.id].push(el);
+    }
+  }
+});
+
+/* ---------- ports ---------- */
+const portsG=mk("g",{});svg.appendChild(portsG);
+for(const k in portServices){
+  if(k==="houston")continue;
+  const p=P[k],[x,y]=toXY(p.lon,p.lat);
+  portsG.appendChild(mk("circle",{cx:x.toFixed(1),cy:y.toFixed(1),r:2,class:"port"}));
+  portsG.appendChild(mk("circle",{cx:x.toFixed(1),cy:y.toFixed(1),r:7,class:"port-hit","data-port":k}));
+}
+const H=P.houston,[hx,hy]=toXY(H.lon,H.lat);
+portsG.appendChild(mk("circle",{cx:hx,cy:hy,r:6.5,class:"houston-ring"}));
+portsG.appendChild(mk("circle",{cx:hx,cy:hy,r:3,class:"houston-core"}));
+const hl=mk("text",{x:(hx-10).toFixed(1),y:(hy+4).toFixed(1),class:"houston-label","text-anchor":"end"});
+hl.textContent="HOUSTON";portsG.appendChild(hl);
+
+/* ---------- lane key / filter ---------- */
+const laneCounts={};SERVICES.forEach(s=>laneCounts[s.lane]=(laneCounts[s.lane]||0)+1);
+const key=document.getElementById("key");let activeLane=null;
+const allb=document.createElement("button");allb.className="allbtn";
+allb.innerHTML='<span class="rail"></span><span class="txt"><span class="lab">All lanes</span>'+
+  '<span class="n">'+SERVICES.length+' services</span></span>';
+allb.onclick=()=>setLane(null);key.appendChild(allb);
+Object.keys(LANES).forEach(lane=>{
+  const c=cssv(LANE_VAR[lane]),b=document.createElement("button");b.dataset.lane=lane;
+  b.innerHTML='<span class="rail" style="background:'+c+'"></span><span class="txt">'+
+    '<span class="lab">'+lane+'</span><span class="n">'+laneCounts[lane]+' service'+(laneCounts[lane]>1?'s':'')+'</span></span>';
+  b.onclick=()=>setLane(activeLane===lane?null:lane);key.appendChild(b);
+});
+function setLane(lane){
+  activeLane=lane;
+  key.querySelectorAll("button[data-lane]").forEach(b=>{
+    b.classList.toggle("dim",lane&&b.dataset.lane!==lane);
+    b.classList.toggle("solo",lane&&b.dataset.lane===lane);
+  });
+  allb.classList.toggle("solo",!lane);
+  SERVICES.forEach(s=>routeEls[s.id].forEach(e=>e.classList.toggle("fade",lane&&s.lane!==lane)));
+  document.querySelectorAll("tr.row").forEach(r=>r.style.display=(!lane||r.dataset.lane===lane)?"":"none");
+}
+
+/* ---------- tooltip + hover ---------- */
+const tt=document.getElementById("tt");
+function showTT(html,ev){tt.innerHTML=html;tt.classList.add("show");moveTT(ev);}
+function moveTT(ev){const pad=15;let x=ev.clientX+pad,y=ev.clientY+pad;const r=tt.getBoundingClientRect();
+  if(x+r.width>innerWidth-8)x=ev.clientX-r.width-pad;if(y+r.height>innerHeight-8)y=ev.clientY-r.height-pad;
+  tt.style.left=x+"px";tt.style.top=y+"px";}
+function hideTT(){tt.classList.remove("show");}
+const svc=id=>SERVICES.find(s=>s.id===id);
+function rotHTML(s){return s.rotation.map(k=>k==="houston"?"Houston":P[k].name.replace(/,.*$/,"")).join(" <b>&rarr;</b> ");}
+function highlight(sid){SERVICES.forEach(s=>routeEls[s.id].forEach(e=>{
+  e.classList.toggle("hl",s.id===sid);e.classList.toggle("fade",s.id!==sid);}));}
+function clearHL(){SERVICES.forEach(s=>routeEls[s.id].forEach(e=>{e.classList.remove("hl");
+  e.classList.toggle("fade",activeLane&&s.lane!==activeLane);}));}
+routesG.addEventListener("mouseover",e=>{const sid=e.target.dataset&&e.target.dataset.sid;if(!sid)return;
+  const s=svc(sid);highlight(sid);
+  showTT('<div class="tt-name"><span class="sw" style="background:'+cssv(LANE_VAR[s.lane])+'"></span>'+s.name+
+    '</div><div class="tt-meta">'+s.lane+' &middot; '+s.teu.toLocaleString()+' TEU avg &middot; '+(TERM[s.terminal]||s.terminal)+
+    ' &middot; '+s.rotation.length+' calls</div><div class="tt-rot">'+rotHTML(s)+'</div>',e);});
+routesG.addEventListener("mousemove",moveTT);
+routesG.addEventListener("mouseout",()=>{clearHL();hideTT();});
+portsG.addEventListener("mouseover",e=>{const k=e.target.dataset&&e.target.dataset.port;if(!k)return;
+  const ids=[...new Set(portServices[k])];
+  showTT('<div class="tt-name" style="font-size:.85rem">'+P[k].name+'</div><div class="tt-meta">'+ids.length+
+    ' service'+(ids.length>1?'s':'')+'</div><div class="tt-rot">'+ids.join(", ")+'</div>',e);});
+portsG.addEventListener("mousemove",moveTT);
+portsG.addEventListener("mouseout",hideTT);
+
+/* ---------- service index table ---------- */
+const groups=document.getElementById("groups");
+Object.keys(LANES).forEach(lane=>{
+  const c=cssv(LANE_VAR[lane]),list=SERVICES.filter(s=>s.lane===lane);
+  const block=document.createElement("div");block.className="lane-block";
+  block.innerHTML='<div class="lane-title"><span class="rail" style="background:'+c+'"></span>'+lane+
+    ' <span class="ct">&mdash; '+list.length+'</span></div>';
+  const tbl=document.createElement("table");tbl.className="svc";
+  tbl.innerHTML='<tr><th>ID</th><th>Service</th><th style="text-align:right">Avg TEU</th>'+
+    '<th style="text-align:right">Calls</th><th>Terminal</th></tr>';
+  list.forEach(s=>{
+    const tr=document.createElement("tr");tr.className="row";tr.dataset.sid=s.id;tr.dataset.lane=lane;
+    tr.style.setProperty("--rowcol",c);
+    tr.innerHTML='<td class="id">'+s.id+'</td><td class="nm">'+s.name+'</td>'+
+      '<td class="num">'+s.teu.toLocaleString()+'</td><td class="num">'+s.rotation.length+'</td>'+
+      '<td class="trm">'+(TERM[s.terminal]||s.terminal)+'</td>';
+    tr.onmouseenter=()=>highlight(s.id);tr.onmouseleave=clearHL;
+    tr.onclick=()=>{document.querySelectorAll("tr.row").forEach(x=>x.classList.remove("active"));
+      tr.classList.add("active");setLane(null);highlight(s.id);
+      document.querySelector(".mapframe").scrollIntoView({behavior:"smooth",block:"center"});};
+    tbl.appendChild(tr);
+  });
+  block.appendChild(tbl);groups.appendChild(block);
+});
+
+/* ---------- data-quality flags ---------- */
+const flags=document.getElementById("flags"),fl=[];
+for(const k in P)if(P[k].flag)fl.push("<b>"+P[k].name+"</b> &mdash; "+P[k].flag);
+SERVICES.forEach(s=>{if(s.notes)fl.push("<b>"+s.id+"</b> &mdash; "+s.notes);});
+flags.innerHTML=fl.map(f=>"<li>"+f+"</li>").join("");
+</script>
