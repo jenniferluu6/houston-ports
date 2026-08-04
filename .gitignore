@@ -8,3 +8,6 @@ __pycache__/
 # os
 Thumbs.db
 .DS_Store
+
+# local Claude Code tooling config
+/.claude/
