@@ -50,6 +50,7 @@
   .lane-chip .ct{font-size:.72rem;color:var(--faint);font-variant-numeric:tabular-nums}
   .lane-chip.off{opacity:.34}
   .lane-chip.off .rail{background:var(--dim)!important}
+  .lane-chip.solo{background:var(--panel-2)}
 
   .list{flex:1;overflow-y:auto;padding:6px 12px 20px}
   .grp{margin-top:10px}
@@ -105,12 +106,12 @@
   </div>
 
   <div class="section">
-    <div class="lbl">Trade lanes <button id="reset-lanes">Reset</button></div>
+    <div class="lbl">Show by lane <button id="reset-lanes">Show all</button></div>
     <div class="lanes" id="lanes"></div>
   </div>
 
   <div class="lbl" style="padding:14px 22px 0;color:var(--faint)">
-    Services <button id="clear-pins" style="visibility:hidden;font-family:var(--sans);font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:none;border:0;cursor:pointer;font-weight:600">Clear pins</button>
+    Show specific routes <button id="clear-pins" style="visibility:hidden;font-family:var(--sans);font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:none;border:0;cursor:pointer;font-weight:600">Show all</button>
   </div>
   <div class="list" id="list"></div>
 
@@ -126,7 +127,6 @@
 <script>
 const LANE = {"India/MiddleEast":"#9e2b0e","Med":"#c6821a","N/S America":"#4c6b1f",
               "Trans-Atlantic":"#1e1a4b","Trans-Pacific":"#226e7c"};
-const PINPALETTE = ["#1e1a4b","#9e2b0e","#226e7c","#c6821a","#4c6b1f","#7a2f6b"];
 const laneMatch = ["match",["get","lane"],
   "India/MiddleEast","#9e2b0e","Med","#c6821a","N/S America","#4c6b1f",
   "Trans-Atlantic","#1e1a4b","Trans-Pacific","#226e7c","#888888"];
@@ -140,8 +140,7 @@ const map = new maplibregl.Map({
 map.addControl(new maplibregl.NavigationControl({showCompass:false}), "top-right");
 
 let SERVICES=[];                      // properties of each service feature
-const activeLanes=new Set();          // empty = all
-const pinned=new Map();               // svc_id -> color
+const selected=new Set();             // selected svc_ids; empty = show all routes
 let hovered=null;
 
 function loadError(msg){
@@ -197,19 +196,25 @@ map.on("load", async ()=>{
 });
 
 /* ---------- state application ---------- */
-const shownByFilter = lane => activeLanes.size===0 || activeLanes.has(lane);
 function desired(p){
-  const svc=p.svc_id, lane=p.lane, laneCol=LANE[lane];
-  if(pinned.has(svc)) return {col:pinned.get(svc), w:5, op:1};
-  if(svc===hovered)   return {col:laneCol, w:5, op:1};
-  if(!shownByFilter(lane)) return {col:laneCol, w:0, op:0};        // lane filtered out -> hidden
-  if(pinned.size>0)   return {col:"#b9b7ae", w:1.2, op:0.14};      // ghost the rest while comparing pins
-  return {col:laneCol, w:2.4, op:0.9};
+  const laneCol=LANE[p.lane];
+  return p.svc_id===hovered ? {col:laneCol, w:5, op:1} : {col:laneCol, w:2.4, op:0.9};
 }
 function recompute(){
+  // Show ONLY the selected routes (by service id). Empty selection = show everything.
+  const filt = selected.size>0 ? ["in", ["get","svc_id"], ["literal", [...selected]]] : null;
+  ["casing","routes","routes-hit"].forEach(l=>{ if(map.getLayer(l)) map.setFilter(l, filt); });
   SERVICES.forEach(p=>map.setFeatureState({source:"routes",id:p.svc_id}, desired(p)));
   syncUI();
+  map.triggerRepaint();
 }
+const laneServices = lane => SERVICES.filter(p=>p.lane===lane).map(p=>p.svc_id);
+function toggleLane(lane){
+  const svcs=laneServices(lane), allOn=svcs.every(s=>selected.has(s));
+  svcs.forEach(s=> allOn ? selected.delete(s) : selected.add(s));
+  recompute();
+}
+function toggleService(svc){ selected.has(svc) ? selected.delete(svc) : selected.add(svc); recompute(); }
 
 /* ---------- sidebar: lanes ---------- */
 function counts(){const c={};SERVICES.forEach(p=>c[p.lane]=(c[p.lane]||0)+1);return c;}
@@ -219,10 +224,10 @@ function buildLanes(){
     const b=document.createElement("button"); b.className="lane-chip"; b.dataset.lane=lane;
     b.innerHTML='<span class="rail" style="background:'+LANE[lane]+'"></span>'+
       '<span class="nm">'+lane+'</span><span class="ct">'+(c[lane]||0)+'</span>';
-    b.onclick=()=>{ activeLanes.has(lane)?activeLanes.delete(lane):activeLanes.add(lane); pinned.clear(); recompute(); };
+    b.onclick=()=>toggleLane(lane);
     box.appendChild(b);
   });
-  document.getElementById("reset-lanes").onclick=()=>{activeLanes.clear();recompute();};
+  document.getElementById("reset-lanes").onclick=()=>{selected.clear();recompute();};
 }
 
 /* ---------- sidebar: service list ---------- */
@@ -233,43 +238,37 @@ function buildList(){
     const g=document.createElement("div"); g.className="grp";
     g.innerHTML='<div class="gh"><span class="rail" style="background:'+LANE[lane]+'"></span>'+lane+'</div>';
     rows.forEach(p=>{
-      const r=document.createElement("div"); r.className="row"; r.dataset.svc=p.svc_id;
+      const r=document.createElement("div"); r.className="row"; r.dataset.svc=p.svc_id; r.dataset.lane=p.lane;
       r.innerHTML='<span class="pin"></span><span class="info"><span class="nm">'+p.name+'</span>'+
         '<span class="sub">'+p.n_calls+' calls · '+p.terminal+'</span></span>'+
         '<span class="teu">'+p.teu.toLocaleString()+'</span>';
       r.onmouseenter=()=>setHover(p.svc_id);
       r.onmouseleave=()=>setHover(null);
-      r.onclick=()=>togglePin(p.svc_id);
+      r.onclick=()=>toggleService(p.svc_id);
       g.appendChild(r);
     });
     list.appendChild(g);
   });
-  document.getElementById("clear-pins").onclick=()=>{pinned.clear();recompute();};
+  document.getElementById("clear-pins").onclick=()=>{selected.clear();recompute();};
 }
 
-function togglePin(svc){
-  if(pinned.has(svc)){ pinned.delete(svc); }
-  else{
-    const used=new Set(pinned.values());
-    const col=PINPALETTE.find(c=>!used.has(c)) || PINPALETTE[pinned.size%PINPALETTE.length];
-    pinned.set(svc,col);
-  }
-  recompute();
-}
 function setHover(svc){ if(svc===hovered)return; hovered=svc; recompute(); }
 
 /* ---------- reflect state in the sidebar ---------- */
 function syncUI(){
+  const anySel = selected.size>0;
   document.querySelectorAll(".lane-chip").forEach(b=>{
-    const on = activeLanes.size===0 || activeLanes.has(b.dataset.lane);
-    b.classList.toggle("off", !on);
+    const svcs=laneServices(b.dataset.lane), nSel=svcs.filter(s=>selected.has(s)).length;
+    b.classList.toggle("off", anySel && nSel===0);          // dim lanes with nothing chosen
+    b.classList.toggle("solo", anySel && nSel>0);           // mark lanes with a selection
   });
-  document.getElementById("reset-lanes").classList.toggle("show", activeLanes.size>0);
-  document.getElementById("clear-pins").style.visibility = pinned.size>0 ? "visible":"hidden";
+  document.getElementById("reset-lanes").classList.toggle("show", anySel);
+  document.getElementById("clear-pins").style.visibility = anySel ? "visible":"hidden";
   document.querySelectorAll(".row").forEach(r=>{
-    const svc=r.dataset.svc, isPin=pinned.has(svc);
-    r.classList.toggle("pinned", isPin);
-    r.querySelector(".pin").style.background = isPin ? pinned.get(svc) : "transparent";
+    const on=selected.has(r.dataset.svc);
+    r.classList.toggle("pinned", on);
+    const pin=r.querySelector(".pin");
+    if(pin) pin.style.background = on ? LANE[r.dataset.lane] : "transparent";
   });
 }
 
@@ -294,13 +293,11 @@ function portTipHTML(p){
 }
 function wireMapEvents(){
   map.on("mousemove","routes-hit",e=>{const p=e.features[0].properties;
-    if(!shownByFilter(p.lane))return;
     map.getCanvas().style.cursor="pointer";setHover(p.svc_id);showTip(routeTipHTML(p),e);});
   map.on("mouseleave","routes-hit",()=>{map.getCanvas().style.cursor="";setHover(null);hideTip();});
-  // tap/click: works where mousemove is absent (touch). Shows info, traces, and pins.
+  // tap/click a route: show its info and toggle it in/out of the selection.
   map.on("click","routes-hit",e=>{const p=e.features[0].properties;
-    if(!shownByFilter(p.lane))return;
-    setHover(p.svc_id);showTip(routeTipHTML(p),e);togglePin(p.svc_id);});
+    setHover(p.svc_id);showTip(routeTipHTML(p),e);toggleService(p.svc_id);});
 
   ["ports","houston"].forEach(l=>{
     map.on("mousemove",l,e=>{map.getCanvas().style.cursor="pointer";showTip(portTipHTML(e.features[0].properties),e);});
